@@ -24,11 +24,11 @@ const commentSchema = mongoose.Schema(
             type: String,
         },
     },
-    { 
-        timestamps: true
+    {
+        timestamps: true,
     }
 );
 
-const Comment = mongoose.model('Comment', commentSchema);
+const Comment = mongoose.model("Comment", commentSchema);
 
 export default Comment;
