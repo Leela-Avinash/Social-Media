@@ -2,6 +2,24 @@ import User from "../models/userModel.js";
 import bcrypt from "bcryptjs";
 import generateTokenAndSetCookie from "../utils/helpers/generateToken.js";
 
+const getUserProfile = async (req, res) => {
+    const { username } = req.params;
+    try {
+        const user = await User.findOne({ username })
+            .select("-password")
+            .select("-updatedAt");
+
+        if (!user) {
+            return res.status(400).json({ message: "User not found" });
+        }
+
+        res.status(200).json({ message: "User found", user });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+        console.log("Error in get user: ", err.message);
+    }
+};
+
 const signupUser = async (req, res) => {
     try {
         const { name, email, username, password } = req.body;
@@ -83,6 +101,7 @@ const followUnfollow = async (req, res) => {
         const targetUser = await User.findById(id);
         const currentuser = await User.findById(req.user._id);
 
+        console.log(req.user._id);
         if (id === req.user._id.toString()) {
             return res.status(400).json({
                 message: "you cannot follow / unfollow yourself",
@@ -141,6 +160,7 @@ const updateUser = async (req, res) => {
         }
 
         user.name = name || user.name;
+        user.username = username || user.username;
         user.email = email || user.email;
         user.profilepic = profilepic || user.profilepic;
         user.bio = bio || user.bio;
@@ -154,4 +174,11 @@ const updateUser = async (req, res) => {
     }
 };
 
-export { signupUser, loginUser, logoutUser, followUnfollow, updateUser };
+export {
+    signupUser,
+    loginUser,
+    logoutUser,
+    followUnfollow,
+    updateUser,
+    getUserProfile,
+};
