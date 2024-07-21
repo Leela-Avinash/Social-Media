@@ -23,6 +23,11 @@ const commentSchema = mongoose.Schema(
         username: {
             type: String,
         },
+        likes: {
+            type: [mongoose.Schema.ObjectId],
+            ref: "User",
+            default: []
+        }
     },
     {
         timestamps: true,

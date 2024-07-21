@@ -3,7 +3,8 @@ import dotenv from "dotenv";
 import connectDB from "./db/connectDB.js";
 import cookieParser from "cookie-parser";
 import userRoutes from "./routes/userRoutes.js";
-import postRoutes from "./routes/postRoutes.js"
+import postRoutes from "./routes/postRoutes.js";
+import commentRoutes from "./routes/commentRoutes.js"
 
 dotenv.config();
 connectDB();
@@ -15,6 +16,7 @@ app.use(cookieParser());
 
 app.use("/api/users", userRoutes);
 app.use("/api/posts", postRoutes);
+app.use("/api/comment", commentRoutes)
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
