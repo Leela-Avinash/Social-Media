@@ -22,6 +22,7 @@ const getUserProfile = async (req, res) => {
 
 const signupUser = async (req, res) => {
     try {
+        console.log(req.body);
         const { name, email, username, password } = req.body;
         let user = await User.findOne({ $or: [{ email, username }] });
         if (user) {
@@ -58,21 +59,23 @@ const signupUser = async (req, res) => {
 
 const loginUser = async (req, res) => {
     try {
-        const { username, password } = req.body;
-        let user = await User.findOne({ username });
-        const isPasswordCorrect = await bcrypt.compare(
-            password,
-            user?.password || ""
-        );
+        const { identifier, password } = req.body;
 
-        if (!user || !isPasswordCorrect) {
-            return res
-                .status(400)
-                .json({ message: "Invalid Username or password" });
+        const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(identifier);
+        const user = await User.findOne(isEmail ? { email: identifier } : { username: identifier });
+
+        if (!user) {
+            return res.status(400).json({ message: "Invalid Username or Email" });
+        }
+
+        const isPasswordCorrect = await bcrypt.compare(password, user.password);
+
+        if (!isPasswordCorrect) {
+            return res.status(400).json({ message: "Invalid Password" });
         }
 
         generateTokenAndSetCookie(user._id, res);
-
+        console.log("success")
         res.status(201).json({
             _id: user._id,
             name: user.name,
@@ -84,6 +87,7 @@ const loginUser = async (req, res) => {
         console.log("Error in login user: ", err.message);
     }
 };
+
 
 const logoutUser = (req, res) => {
     try {

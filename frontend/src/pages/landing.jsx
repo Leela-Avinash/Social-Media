@@ -1,5 +1,4 @@
 import React from "react";
-import { useState, useEffect } from "react";
 import { TypeAnimation } from "react-type-animation";
 import { Link } from "react-router-dom";
 
@@ -63,7 +62,7 @@ const LandingPage = () => {
                             Join now and connect with influencers around the
                             world.
                         </p>
-                        <Link to="/signup" className="gbtn mt-6 font-semibold animate-fade-in w-52 hover:text-white">
+                        <Link to="/auth" className="gbtn mt-6 font-semibold animate-fade-in w-52 hover:text-white">
                             Get Started
                         </Link>
                     </div>
