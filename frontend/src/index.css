@@ -1,0 +1,9 @@
+/* src/index.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+div:last-of-type span{
+    margin-left: -360px;
+    animation: slidein 7s infinite;
+}

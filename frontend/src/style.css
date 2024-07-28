@@ -1,0 +1,75 @@
+.gbtn {
+  --border-color: linear-gradient(-45deg, #ffae00, #7e03aa, #00fffb);
+  --border-width: 0.125em;
+  --blur: 30px;
+  --bg: transparent;
+  --color: linear-gradient(-45deg, #ffae00, #7e03aa, #00fffb);
+  color: var(--color);
+  cursor: pointer;
+  position: relative;
+  isolation: isolate;
+  display: inline-grid;
+  place-content: center;
+  padding: 0.5em 1.5em;
+  font-size: 17px;
+  border-style: solid;
+  border-width: 2px;
+  border-color: rgb(40, 156, 202);
+  text-transform: uppercase;
+  border-radius: 25px;
+  box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.6);
+  overflow: hidden;
+  transition: color 250ms;
+}
+
+.gbtn::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  color: var(--bg);
+  background: transparent;
+  background-size: 300% 300%;
+  animation: move-bg7234 5s ease infinite;
+  z-index: -2;
+  border-radius: 25px;
+  transition: all ease 250ms;
+}
+
+.gbtn::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--bg);
+  z-index: -1;
+  border-radius: 25px;
+  transition: all 250ms ease;
+}
+
+.gbtn:hover::after {
+  background: linear-gradient(-45deg, #ffae00, #7e03aa, #00fffb);
+  background-size: 300% 300%;
+  animation: move-bg7234 5s ease infinite;
+}
+
+.gbtn:hover::before {
+  background: transparent;
+  color: var(--color);
+}
+
+@keyframes move-bg7234 {
+  0% {
+    background-position: 0% 0%;
+  }
+
+  50% {
+    background-position: 100% 100%;
+  }
+
+  100% {
+    background-position: 0% 0%;
+  }
+}
+
+.gbtn:where(:hover, :focus) {
+  color: #fff;
+}
