@@ -23,16 +23,23 @@ const getUserProfile = async (req, res) => {
 const signupUser = async (req, res) => {
     try {
         console.log(req.body);
+        let success = false;
         const { name, email, username, password } = req.body;
-        let user = await User.findOne({ $or: [{ email, username }] });
-        if (user) {
-            return res.status(400).json({ message: "User already exists" });
+        
+        let userEmail = await User.findOne({ email });
+        if (userEmail) {
+            return res.status(400).json({ success, message: "Email already exists" });
+        }
+
+        let userUsername = await User.findOne({ username });
+        if (userUsername) {
+            return res.status(400).json({ success, message: "Username already exists" });
         }
 
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
 
-        user = await User.create({
+        const user = await User.create({
             name,
             username,
             email,
@@ -41,18 +48,24 @@ const signupUser = async (req, res) => {
 
         if (user) {
             generateTokenAndSetCookie(user._id, res);
+            success = true;
 
-            res.status(201).json({
+            res.status(201).json({success,user:{
                 _id: user._id,
                 name: user.name,
                 username: user.username,
                 email: user.email,
-            });
+            }});
         } else {
-            res.status(400).json({ message: "invalid user data" });
+            res.status(400).json({ success, message: "Invalid user data" });
         }
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        if (err.code === 11000) {
+            const field = Object.keys(err.keyPattern)[0];
+            const message = `${field.charAt(0).toUpperCase() + field.slice(1)} already exists`;
+            return res.status(400).json({ success: false, message });
+        }
+        res.status(500).json({ success: false, message: err.message });
         console.log("Error in signup user: ", err.message);
     }
 };
@@ -60,12 +73,17 @@ const signupUser = async (req, res) => {
 const loginUser = async (req, res) => {
     try {
         const { identifier, password } = req.body;
+        let success = false;
 
         const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(identifier);
-        const user = await User.findOne(isEmail ? { email: identifier } : { username: identifier });
+        const user = await User.findOne(
+            isEmail ? { email: identifier } : { username: identifier }
+        );
 
         if (!user) {
-            return res.status(400).json({ message: "Invalid Username or Email" });
+            return res
+                .status(400)
+                .json({ message: "Invalid Username or Email" });
         }
 
         const isPasswordCorrect = await bcrypt.compare(password, user.password);
@@ -75,19 +93,19 @@ const loginUser = async (req, res) => {
         }
 
         generateTokenAndSetCookie(user._id, res);
-        console.log("success")
-        res.status(201).json({
+        console.log("success");
+        success=true;
+        res.status(201).json({success,user:{
             _id: user._id,
             name: user.name,
             username: user.username,
             email: user.email,
-        });
+        }});
     } catch (err) {
         res.status(500).json({ message: err.message });
         console.log("Error in login user: ", err.message);
     }
 };
-
 
 const logoutUser = (req, res) => {
     try {
@@ -177,6 +195,11 @@ const updateUser = async (req, res) => {
     }
 };
 
+const checkAuth = (req, res) => {
+    console.log(req.user);
+    res.status(200).json({ success: true, user: req.user });
+};
+
 export {
     signupUser,
     loginUser,
@@ -184,7 +207,5 @@ export {
     followUnfollow,
     updateUser,
     getUserProfile,
+    checkAuth
 };
-
-
-

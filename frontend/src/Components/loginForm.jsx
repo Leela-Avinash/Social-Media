@@ -1,57 +1,72 @@
 import React from "react";
 import Input from "./authInput.jsx";
+import { useDispatch, useSelector } from "react-redux";
+import { setValidationErrors } from "../redux/slices/authSlice.js";
 
 const Login = ({ credentials, handleChange, onSubmit }) => {
-  return (
-    <form
-      className="bg-white w-full rounded-br-lg rounded-tr-lg"
-      onSubmit={onSubmit}
-    >
-      <Input
-        type="text"
-        name="identifier"
-        value={credentials.identifier}
-        handleChange={handleChange}
-        label="Username or Email"
-      />
-      <Input
-        type="password"
-        name="password"
-        value={credentials.password}
-        handleChange={handleChange}
-        label="Password"
-        minLength={8}
-      />
-      <div className="flex items-center my-3">
-        <hr className="w-full border-gray-600" />
-        <span className="mx-4 text-gray-400">or</span>
-        <hr className="w-full border-gray-600" />
-      </div>
-      <div className="flex md:flex-row flex-col md:space-x-3 space-y-3 md:space-y-0 mb-2">
-        <button className="bg-white text-black text-sm flex items-center justify-center w-full py-2 rounded-lg border-solid border-2">
-          <i className="fab fa-google text-red-600 hover:text-red-800 space-x-4 mx-2"></i>
-          Sign in with Google
-        </button>
-        <button className="bg-white text-black text-sm flex items-center justify-center w-full py-2 rounded-lg border-solid border-2">
-          <i className="fab fa-facebook text-blue-600 hover:text-blue-800 mx-2"></i>
-          Sign in with Facebook
-        </button>
-      </div>
-      <button
-        type="submit"
-        className={`w-full py-2 rounded-md transition duration-300 ${
-          credentials.password.length < 8 || !credentials.identifier
-            ? "bg-blue-300 text-white cursor-not-allowed"
-            : "bg-blue-500 text-white hover:bg-blue-600"
-        }`}
-        disabled={
-          credentials.password.length < 8 || !credentials.identifier
+    const dispatch = useDispatch();
+    const { errors, backendError } = useSelector((state) => state.auth);
+
+    const validate = () => {
+        const newErrors = {};
+        if (!credentials.identifier)
+            newErrors.identifier = "Please enter an email or username";
+        if (credentials.password.length < 8)
+            newErrors.password = "Passwords must be eight or more characters";
+        return newErrors;
+    };
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        const validationErrors = validate();
+        if (Object.keys(validationErrors).length > 0) {
+            dispatch(setValidationErrors(validationErrors));
+        } else {
+            dispatch(setValidationErrors({}));
+            onSubmit(e);
         }
-      >
-        Sign In
-      </button>
-    </form>
-  );
+    };
+    return (
+        <form
+            className="bg-white w-full rounded-br-lg rounded-tr-lg"
+            onSubmit={handleSubmit}
+            noValidate
+        >
+            <Input
+                type="text"
+                name="identifier"
+                value={credentials.identifier}
+                handleChange={handleChange}
+                label="Username or Email"
+            />
+            {errors.identifier && (
+                <p className="text-red-400 text-xs">{errors.identifier}</p>
+            )}
+            <Input
+                type="password"
+                name="password"
+                value={credentials.password}
+                handleChange={handleChange}
+                label="Password"
+                minLength={8}
+            />
+            {errors.password && (
+                <p className="text-red-400 text-xs">{errors.password}</p>
+            )}
+            <div className="w-full flex justify-center mt-2">{backendError && <p className="text-red-400 text-sm">{backendError}</p>}</div>
+            <button
+                type="submit"
+                className="w-full py-2 rounded-md mt-3 transition duration-300 bg-blue-500 text-white hover:bg-blue-600"
+            >
+                Sign In
+            </button>
+            <div className="flex items-center my-3">
+                <hr className="w-full border-gray-600" />
+                <span className="mx-4 text-gray-400">or</span>
+                <hr className="w-full border-gray-600" />
+            </div>
+        </form>
+    );
 };
 
 export default Login;

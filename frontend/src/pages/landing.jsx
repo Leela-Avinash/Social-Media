@@ -1,8 +1,17 @@
 import React from "react";
 import { TypeAnimation } from "react-type-animation";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { setSignUp } from "../redux/slices/authSlice";
 
 const LandingPage = () => {
+    const dispatch = useDispatch();
+    const navigate = useNavigate();
+
+    const handleClick = (SignUp) => {
+        dispatch(setSignUp(SignUp));
+        navigate("/auth");
+    };
     return (
         <div className="min-h-screen bg-gradient-to-r from-pink-200 via-purple-200 to-blue-200 flex flex-col items-center h-full">
             <header className="w-full py-4">
@@ -30,7 +39,10 @@ const LandingPage = () => {
                                 </li>
                             </ul>
                         </nav>
-                        <button className="bg-blue-600 text-white px-4 py-2 rounded-full">
+                        <button
+                            className="bg-blue-600 text-white px-4 py-2 rounded-full"
+                            onClick={() => handleClick(false)}
+                        >
                             Login
                         </button>
                     </div>
@@ -62,7 +74,11 @@ const LandingPage = () => {
                             Join now and connect with influencers around the
                             world.
                         </p>
-                        <Link to="/auth" className="gbtn mt-6 font-semibold animate-fade-in w-52 hover:text-white">
+                        <Link
+                            to="/auth"
+                            className="gbtn mt-6 font-semibold animate-fade-in w-52 hover:text-white"
+                            onClick={() => dispatch(setSignUp(true))}
+                        >
                             Get Started
                         </Link>
                     </div>
