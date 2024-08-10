@@ -4,16 +4,28 @@ import generateTokenAndSetCookie from "../utils/helpers/generateToken.js";
 
 const getUserProfile = async (req, res) => {
     const { username } = req.params;
+    let success = false;
     try {
         const user = await User.findOne({ username })
             .select("-password")
             .select("-updatedAt");
 
         if (!user) {
-            return res.status(400).json({ message: "User not found" });
+            return res.status(400).json({success, message: "User not found" });
         }
 
-        res.status(200).json({ message: "User found", user });
+        success = true
+        res.status(200).json({ success, user: {
+            id: user._id,
+            name: user.name,
+            username: user.username,
+            email: user.email,
+            profilepic: user.profilepic,
+            followersCount: user.followers.length,
+            followingCount: user.following.length,
+            bio: user.bio,
+            date: user.date,
+        } });
     } catch (err) {
         res.status(500).json({ message: err.message });
         console.log("Error in get user: ", err.message);
@@ -25,15 +37,19 @@ const signupUser = async (req, res) => {
         console.log(req.body);
         let success = false;
         const { name, email, username, password } = req.body;
-        
+
         let userEmail = await User.findOne({ email });
         if (userEmail) {
-            return res.status(400).json({ success, message: "Email already exists" });
+            return res
+                .status(400)
+                .json({ success, message: "Email already exists" });
         }
 
         let userUsername = await User.findOne({ username });
         if (userUsername) {
-            return res.status(400).json({ success, message: "Username already exists" });
+            return res
+                .status(400)
+                .json({ success, message: "Username already exists" });
         }
 
         const salt = await bcrypt.genSalt(10);
@@ -50,19 +66,24 @@ const signupUser = async (req, res) => {
             generateTokenAndSetCookie(user._id, res);
             success = true;
 
-            res.status(201).json({success,user:{
-                _id: user._id,
-                name: user.name,
-                username: user.username,
-                email: user.email,
-            }});
+            res.status(201).json({
+                success,
+                user: {
+                    _id: user._id,
+                    name: user.name,
+                    username: user.username,
+                    email: user.email,
+                },
+            });
         } else {
             res.status(400).json({ success, message: "Invalid user data" });
         }
     } catch (err) {
         if (err.code === 11000) {
             const field = Object.keys(err.keyPattern)[0];
-            const message = `${field.charAt(0).toUpperCase() + field.slice(1)} already exists`;
+            const message = `${
+                field.charAt(0).toUpperCase() + field.slice(1)
+            } already exists`;
             return res.status(400).json({ success: false, message });
         }
         res.status(500).json({ success: false, message: err.message });
@@ -94,13 +115,21 @@ const loginUser = async (req, res) => {
 
         generateTokenAndSetCookie(user._id, res);
         console.log("success");
-        success=true;
-        res.status(201).json({success,user:{
-            _id: user._id,
-            name: user.name,
-            username: user.username,
-            email: user.email,
-        }});
+        success = true;
+        res.status(201).json({
+            success,
+            user: {
+                id: user._id,
+                name: user.name,
+                username: user.username,
+                email: user.email,
+                profilepic: user.profilepic,
+                followersCount: user.followers.length,
+                followingCount: user.following.length,
+                bio: user.bio,
+                date: user.date,
+            },
+        });
     } catch (err) {
         res.status(500).json({ message: err.message });
         console.log("Error in login user: ", err.message);
@@ -197,7 +226,20 @@ const updateUser = async (req, res) => {
 
 const checkAuth = (req, res) => {
     console.log(req.user);
-    res.status(200).json({ success: true, user: req.user });
+    res.status(200).json({
+        success: true,
+        user: {
+            id: req.user._id,
+            name: req.user.name,
+            username: req.user.username,
+            email: req.user.email,
+            profilepic: req.user.profilepic,
+            followersCount: req.user.followers.length,
+            followingCount: req.user.following.length,
+            bio: req.user.bio,
+            date: req.user.date,
+        },
+    });
 };
 
 export {
@@ -207,5 +249,5 @@ export {
     followUnfollow,
     updateUser,
     getUserProfile,
-    checkAuth
+    checkAuth,
 };

@@ -30,6 +30,7 @@ export default {
     },
   },
   plugins: [
+    require('@tailwindcss/aspect-ratio'),
     function ({ addUtilities, e }) {
       addUtilities({
         // Custom gradient border utility
@@ -45,6 +46,18 @@ export default {
         ".border-gradient-hover:hover": {
           backgroundSize: "100% 0%", // Expand gradient on hover
           backgroundPosition: "0 100%", // Hover position
+        },
+        ".glass-button": {
+          backdropFilter: "blur(10px)",
+          WebkitBackdropFilter: "blur(10px)",
+          border: "1px solid rgba(255, 255, 255, 0.18)",
+          boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+          borderRadius: "0.5rem",
+          padding: "0.5rem 1rem",
+          transition: "all 0.3s ease",
+        },
+        ".glass-button:hover": {
+          boxShadow: "0 6px 8px rgba(0, 0, 0, 0.2)",
         },
       });
     },

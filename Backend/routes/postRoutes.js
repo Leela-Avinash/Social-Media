@@ -11,7 +11,7 @@ import protectRoute from "../middleware/protectRoute.js";
 const router = express.Router();
 
 router.get("/feed", protectRoute, getFeed);
-router.get("/:id", getPost);
+router.get("/posts/:id", getPost);
 router.post("/create", protectRoute, createPost);
 router.delete("/delete/:id", protectRoute, deletePost);
 router.put("/like/:id", protectRoute, likePost);

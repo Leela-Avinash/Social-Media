@@ -1,17 +1,24 @@
 import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import {
+    BrowserRouter as Router,
+    Routes,
+    Route,
+    Navigate,
+} from "react-router-dom";
 
 import "./style.css";
 
 import LandingPage from "./pages/landing.jsx";
 import Auth from "./pages/auth.jsx";
 import { setAuth } from "./redux/slices/authSlice";
-import Profile from "./pages/profile.jsx";
+import UserPage from "./pages/userPage.jsx";
+import { setUser } from "./redux/slices/userSlice.js";
 
 function App() {
     const dispatch = useDispatch();
     const { isAuthenticated } = useSelector((state) => state.auth);
+    const user = useSelector((state) => state.user);
 
     useEffect(() => {
         const checkAuth = async () => {
@@ -26,6 +33,8 @@ function App() {
                 const json = await response.json();
                 console.log(json);
                 if (json.success) {
+                    localStorage.setItem("user", JSON.stringify(json.user));
+                    dispatch(setUser(json.user));
                     dispatch(setAuth(true));
                 }
             } catch (error) {
@@ -35,17 +44,18 @@ function App() {
 
         checkAuth();
     }, [dispatch]);
+    console.log(user);
     return (
         <div>
             <Router>
                 <Routes>
-                    <Route path="/" element={<LandingPage />} />
-                    <Route path="/auth" element={<Auth />} />
+                    <Route path="/" element={isAuthenticated ? <Navigate to={`/${user.username}`} />:<LandingPage />} />
+                    <Route path="/auth" element={isAuthenticated ? <Navigate to={`/${user.username}`} /> : <Auth />} />
+                    <Route path="/:username" element={<UserPage />} />
                 </Routes>
             </Router>
         </div>
     );
 }
-// isAuthenticated ? <Profile /> : 
-// isAuthenticated ? <Navigate to="/" />:
+
 export default App;

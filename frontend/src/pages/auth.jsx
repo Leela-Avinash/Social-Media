@@ -8,6 +8,7 @@ import {
     clearFieldError,
     setSignUp,
 } from "../redux/slices/authSlice";
+import { setUser } from "../redux/slices/userSlice.js";
 import Signup from "../Components/signupForm.jsx";
 import Login from "../Components/loginForm.jsx";
 import SocialLogin from "../Components/socialLogin.jsx";
@@ -15,7 +16,7 @@ import SocialLogin from "../Components/socialLogin.jsx";
 const Auth = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
-    const { isSignUp, credentials, backendError } = useSelector(
+    const { isSignUp, credentials } = useSelector(
         (state) => state.auth
     );
     const host = "http://localhost:5000";
@@ -58,6 +59,8 @@ const Auth = () => {
             });
             const json = await response.json();
             if (json.success) {
+                localStorage.setItem('user', JSON.stringify(json.user));
+                dispatch(setUser(json.user));
                 dispatch(resetCredentials());
                 navigate("/");
             } else {
@@ -82,7 +85,8 @@ const Auth = () => {
         });
         const json = await response.json();
         if (json.success) {
-            localStorage.setItem("token", json.authToken);
+            localStorage.setItem('user', JSON.stringify(json));
+            dispatch(setUser(json.user));
             dispatch(resetCredentials());
             navigate("/");
         } else {

@@ -74,13 +74,12 @@ const LandingPage = () => {
                             Join now and connect with influencers around the
                             world.
                         </p>
-                        <Link
-                            to="/auth"
+                        <button
                             className="gbtn mt-6 font-semibold animate-fade-in w-52 hover:text-white"
-                            onClick={() => dispatch(setSignUp(true))}
+                            onClick={() => handleClick(true)}
                         >
                             Get Started
-                        </Link>
+                        </button>
                     </div>
                 </div>
             </main>
