@@ -14,6 +14,7 @@ import Auth from "./pages/auth.jsx";
 import { setAuth } from "./redux/slices/authSlice";
 import UserPage from "./pages/userPage.jsx";
 import { setUser } from "./redux/slices/userSlice.js";
+import EmailVerify from "./pages/emailVerify.jsx";
 
 function App() {
     const dispatch = useDispatch();
@@ -38,7 +39,7 @@ function App() {
                     dispatch(setAuth(true));
                 }
             } catch (error) {
-                console.error("Error checking auth", error);
+                console.log("Error checking auth", error);
             }
         };
 
@@ -52,6 +53,7 @@ function App() {
                     <Route path="/" element={isAuthenticated ? <Navigate to={`/${user.username}`} />:<LandingPage />} />
                     <Route path="/auth" element={isAuthenticated ? <Navigate to={`/${user.username}`} /> : <Auth />} />
                     <Route path="/:username" element={<UserPage />} />
+                    <Route path="/users/:id/verify/:token" element={<EmailVerify />} />
                 </Routes>
             </Router>
         </div>

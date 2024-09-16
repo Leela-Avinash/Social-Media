@@ -1,6 +1,9 @@
 import User from "../models/userModel.js";
 import bcrypt from "bcryptjs";
 import generateTokenAndSetCookie from "../utils/helpers/generateToken.js";
+import Token from "../models/tokenModel.js";
+import sendEmail from "../utils/helpers/sendemails.js";
+import crypto from "crypto";
 
 const getUserProfile = async (req, res) => {
     const { username } = req.params;
@@ -63,6 +66,15 @@ const signupUser = async (req, res) => {
         });
 
         if (user) {
+            const token = await Token.create({
+                userId: user._id,
+                token : crypto.randomBytes(32).toString("hex")
+            });
+
+            const url = `${process.env.BASE_URL}users/${user._id}/verify/${token.token}`;
+
+            await sendEmail(user.email, "Verify Email", url)
+
             generateTokenAndSetCookie(user._id, res);
             success = true;
 
@@ -111,6 +123,21 @@ const loginUser = async (req, res) => {
 
         if (!isPasswordCorrect) {
             return res.status(400).json({ message: "Invalid Password" });
+        }
+
+        if(!user.verified) {
+            let token = await Token.findOne({userId: user._id});
+            if(!token) {
+                const token = await Token.create({
+                    userId: user._id,
+                    token : crypto.randomBytes(32).toString("hex")
+                });
+    
+                const url = `${process.env.BASE_URL}users/${user._id}/verify/${token.token}`;
+    
+                await sendEmail(user.email, "Verify Email", url)
+            }
+            res.status(400).send({message: "verification Email Sent"})
         }
 
         generateTokenAndSetCookie(user._id, res);
@@ -242,6 +269,34 @@ const checkAuth = (req, res) => {
     });
 };
 
+const verifyUser = async (req, res) => {
+    try {
+        const user = await User.findOne({_id: req.params.id});
+        if(!user) {
+            return res.status(400).send({message: "Invalid Link"});
+        }
+        const token = await Token.findOne({
+            userId: user._id,
+            token: req.params.token
+        });
+        if(!token) {
+            return res.status(400).send({message: "Invvalid Link"});
+        }
+
+        await User.findOneAndUpdate(
+            { _id: user._id },
+            { verified: true }
+        );
+        
+        await Token.deleteOne({ _id: token._id });
+
+        res.status(200).send({message: "email verified succesfully"})
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+        console.log("Error in update user: ", error.message);
+    }
+}
+
 export {
     signupUser,
     loginUser,
@@ -250,4 +305,5 @@ export {
     updateUser,
     getUserProfile,
     checkAuth,
+    verifyUser
 };
