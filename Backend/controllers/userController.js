@@ -4,6 +4,8 @@ import generateTokenAndSetCookie from "../utils/helpers/generateToken.js";
 import Token from "../models/tokenModel.js";
 import sendEmail from "../utils/helpers/sendemails.js";
 import crypto from "crypto";
+import { v2 as cloudinary } from "cloudinary";
+import streamifier from "streamifier";
 
 const getUserProfile = async (req, res) => {
     const { username } = req.params;
@@ -214,9 +216,22 @@ const followUnfollow = async (req, res) => {
     }
 };
 
+const uploadToCloudinary = (buffer) => {
+    return new Promise((resolve, reject) => {
+        const stream = cloudinary.uploader.upload_stream(
+            { folder: 'profile_pics' },
+            (error, result) => {
+                if (result) resolve(result.secure_url);
+                else reject(error);
+            }
+        );
+        streamifier.createReadStream(buffer).pipe(stream);
+    });
+};
+
 const updateUser = async (req, res) => {
     try {
-        const { name, username, email, password, profilepic, bio } = req.body;
+        const { name, username, bio } = req.body;
         const userId = req.user._id;
 
         let user = await User.findById(userId);
@@ -230,24 +245,32 @@ const updateUser = async (req, res) => {
                 .json({ message: "You cannot update other user's profile" });
         }
 
-        if (password) {
-            const salt = await bcrypt.genSalt(10);
-            const hashedPassword = bcrypt.hash(password, salt);
-            user.password = hashedPassword;
+        let profilepic = user.profilepic; // Default to existing profile pic
+
+        if (req.file) {
+            // If there's an existing profile picture, delete it from Cloudinary
+            if (user.profilepic) {
+                // Extract public_id from existing profilepic URL
+                const publicId = user.profilepic.split("/").pop().split(".")[0];
+                await cloudinary.uploader.destroy(publicId);
+            }
+
+            // Upload new profile picture to Cloudinary
+            profilepic = await uploadToCloudinary(req.file.buffer);
         }
 
+        // Update user fields
         user.name = name || user.name;
         user.username = username || user.username;
-        user.email = email || user.email;
         user.profilepic = profilepic || user.profilepic;
         user.bio = bio || user.bio;
 
         user = await user.save();
 
-        res.status(200).json({ message: "Profile updated Successfully", user });
+        res.status(200).json({ message: "Profile updated successfully", user });
     } catch (err) {
+        console.error("Error in update user:", err.message);
         res.status(500).json({ message: err.message });
-        console.log("Error in update user: ", err.message);
     }
 };
 

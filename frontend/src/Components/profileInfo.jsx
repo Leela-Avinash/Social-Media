@@ -5,7 +5,7 @@ const ProfileInfo = ({profilepic, name, username, bio}) => {
         <div className="flex flex-col lg:flex-row lg:w-full">
             <div className="flex justify-center pt-4 lg:w-2/5">
                 <img
-                    src="../IMG/profile.JPG"
+                    src={profilepic || ""}
                     alt="Profile"
                     className="h-28 w-28 rounded-full lg:h-40 lg:w-40"
                 />

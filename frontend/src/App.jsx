@@ -15,6 +15,8 @@ import { setAuth } from "./redux/slices/authSlice";
 import UserPage from "./pages/userPage.jsx";
 import { setUser } from "./redux/slices/userSlice.js";
 import EmailVerify from "./pages/emailVerify.jsx";
+import UpdateProfile from "./pages/updateProfilePage.jsx";
+import ChatPage from "./pages/ChatPage.jsx";
 
 function App() {
     const dispatch = useDispatch();
@@ -54,6 +56,8 @@ function App() {
                     <Route path="/auth" element={isAuthenticated ? <Navigate to={`/${user.username}`} /> : <Auth />} />
                     <Route path="/:username" element={<UserPage />} />
                     <Route path="/users/:id/verify/:token" element={<EmailVerify />} />
+                    <Route path="/update" element={<UpdateProfile />} />
+                    <Route path="/chat" element={isAuthenticated ? <ChatPage /> : <Navigate to={"/auth"}/>} />
                 </Routes>
             </Router>
         </div>
